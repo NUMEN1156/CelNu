@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCHÉ™ GOLD PROTOCOL v1.5 - Waffle Dimension Defender</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Orbitron for Sci-Fi Retro Aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace'],
+                    },
+                    colors: {
+                        neonCyan: '#00f0ff',
+                        mapleGold: '#ffb700',
+                        cyberDark: '#0a0a12',
+                        cyberGray: '#1a1a2e',
+                    },
+                    boxShadow: {
+                        neonCyan: '0 0 15px rgba(0, 240, 255, 0.6)',
+                        mapleGold: '0 0 15px rgba(255, 183, 0, 0.6)',
+                        neonCyanGold: '0 0 20px rgba(0, 240, 255, 0.4), 0 0 20px rgba(255, 183, 0, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #05050a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at center, #111125 0%, #05050a 100%);
+        }
+        /* Scanline effect overlay */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.06),
+                rgba(0, 255, 0, 0.02),
+                rgba(0, 0, 255, 0.06)
+            );
+            background-size: 100% 4px, 6px 100%;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+        /* Custom scrollbar for system log and gallery */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ffb700;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+        /* Glowing neon borders */
+        .border-neon-cyan {
+            border: 2px solid #00f0ff;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+        .border-maple-gold {
+            border: 2px solid #ffb700;
+            box-shadow: 0 0 10px rgba(255, 183, 0, 0.3);
+        }
+        /* Overdrive flashing overlay */
+        @keyframes overdrivePulse {
+            0% { opacity: 0.1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 0.1; }
+        }
+        .overdrive-active {
+            animation: overdrivePulse 0.5s infinite;
+        }
+    </style>
+</head>
+<body class="font-orbitron min-h-screen flex flex-col justify-between select-none relative">
+    <div class="scanlines"></div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="container mx-auto px-4 py-3 flex-grow flex flex-col gap-4 max-w-7xl z-10">
+        
+        <!-- HEADER / GENERAL HUD -->
+        <header class="flex flex-col md:flex-row justify-between items-center gap-4 bg-cyberGray/80 border-b-2 border-neonCyan/50 p-4 rounded-xl shadow-neonCyan backdrop-blur-md">
+            <div class="flex items-center gap-3">
+                <!-- Golden Animated Core Logo -->
+                <div class="relative w-12 h-12 flex items-center justify-center bg-mapleGold/20 rounded-lg border-2 border-mapleGold animate-pulse">
+                    <span class="text-2xl font-black text-mapleGold text-shadow">W</span>
+                    <div class="absolute inset-0 border border-neonCyan rounded-lg scale-110 animate-spin" style="animation-duration: 8s;"></div>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-white to-mapleGold">
+                        ARCHÉ™ GOLD PROTOCOL <span class="text-xs bg-mapleGold text-black font-bold px-1.5 py-0.5 rounded ml-1">v1.5</span>
+                    </h1>
+                    <p class="text-xs font-mono text-neonCyan/80 tracking-widest uppercase">GIR-Toaster-Mech Armaments & Waffle Matrix Shield</p>
+                </div>
+            </div>
+            
+            <!-- Global Statuses -->
+            <div class="flex flex-wrap gap-4 text-xs font-mono items-center">
+                <div class="bg-black/60 px-3 py-1.5 rounded border border-cyan-500/30 flex items-center gap-2">
+                    <span class="inline-block w-2.5 h-2.5 bg-neonCyan rounded-full animate-ping"></span>
+                    <span>SYSTEM: <span class="text-neonCyan font-bold">ONLINE</span></span>
+                </div>
+                <div class="bg-black/60 px-3 py-1.5 rounded border border-amber-500/30 flex items-center gap-2">
+                    <span>COILS: <span class="text-mapleGold font-bold">450K</span></span>
+                </div>
+                <div class="bg-black/60 px-3 py-1.5 rounded border border-red-500/30 flex items-center gap-2 text-red-400">
+                    <span>AXIOMS: <span id="unlocked-axioms-counter" class="font-bold">0/8</span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow">
+            
+            <!-- LEFT COLUMN: AXIOMS & ARTIFACT GALLERY (2 cols) -->
+            <aside class="lg:col-span-3 flex flex-col gap-4">
+                <!-- 8 Locked Axioms Panel -->
+                <section class="bg-cyberGray/80 border-2 border-cyan-500/30 rounded-xl p-4 flex flex-col flex-grow min-h-[300px] backdrop-blur-md">
+                    <h2 class="text-sm font-bold tracking-wider text-neonCyan border-b border-neonCyan/30 pb-2 mb-3 flex items-center justify-between">
+                        <span>THE 8 VERRIEGELTEN AXIOME</span>
+                        <span class="text-[10px] text-gray-400">STATE: SECURE</span>
+                    </h2>
+                    <ul id="axiom-list" class="space-y-2 text-[11px] font-mono flex-grow overflow-y-auto max-h-[320px] lg:max-h-none pr-1">
+                        <!-- Filled by JS -->
+                    </ul>
+                </section>
+
+                <!-- Artifact Gallery -->
+                <section class="bg-cyberGray/80 border-2 border-amber-500/30 rounded-xl p-4 backdrop-blur-md">
+                    <h2 class="text-sm font-bold tracking-wider text-mapleGold border-b border-mapleGold/30 pb-2 mb-3">
+                        ARTEFAKT-GALERIE
+                    </h2>
+                    <div class="grid grid-cols-4 gap-2" id="artifact-grid">
+                        <!-- Filled dynamically by JS -->
+                    </div>
+                </section>
+            </aside>
+
+            <!-- CENTER COLUMN: CORE GAME INTERFACE (7 cols) -->
+            <main class="lg:col-span-6 flex flex-col gap-4">
+                <!-- Playfield Wrapper -->
+                <div class="relative bg-black rounded-xl border-2 border-mapleGold/50 shadow-neonCyanGold overflow-hidden flex flex-col h-[500px]">
+                    
+                    <!-- Overdrive Flash Screen -->
+                    <div id="overdrive-screen" class="absolute inset-0 bg-amber-500/10 pointer-events-none opacity-0 z-30 transition-opacity duration-300"></div>
+
+                    <!-- Screen Overlay System Guard & Game States -->
+                    <div id="game-screens" class="absolute inset-0 z-40 flex items-center justify-center bg-cyberDark/90 p-6 text-center">
+                        <!-- Start Screen -->
+                        <div id="screen-start" class="space-y-6 max-w-md">
+                            <h3 class="text-3xl font-black text-mapleGold tracking-wider text-shadow">GIR-TOASTER ARMED</h3>
+                            <p class="text-xs text-neonCyan font-mono">Die Waffel-Dimension wird angegriffen! Nutze den GIR-Toaster-Mech-Arm, um goldene Waffeln und Sirup-Overdrive gegen Heißhunger-Glitches zu verteidigen.</p>
+                            
+                            <div class="p-3 bg-black/50 rounded-lg border border-neonCyan/30 font-mono text-[11px] space-y-1 text-left text-gray-300">
+                                <p><span class="text-mapleGold font-bold">Waffle + Batter + Heat = Eternal Peace</span></p>
+                                <p>• [A/D] oder [Pfeiltasten] zum Bewegen</p>
+                                <p>• [Mausklick/Leertaste] zum Feuern (Sirup-Plasma)</p>
+                                <p>• Sammle Sirupflaschen für Overdrive!</p>
+                            </div>
+
+                            <button onclick="startGame()" class="px-8 py-3 bg-gradient-to-r from-mapleGold to-amber-600 hover:from-neonCyan hover:to-cyan-600 text-black hover:text-white font-black text-lg rounded-md border-2 border-white shadow-mapleGold tracking-widest transition-all duration-300 scale-100 hover:scale-105">
+                                INITIALIZE PROTOCOL
+                            </button>
+                        </div>
+
+                        <!-- Game Over Screen -->
+                        <div id="screen-gameover" class="hidden space-y-6">
+                            <h3 class="text-4xl font-black text-red-500 tracking-wider">PROTOCOL FAILURE</h3>
+                            <p class="text-xs text-gray-400 font-mono">Die Waffel-Struktur kollabierte. Der Ahorn-Kern ist instabil.</p>
+                            <div class="text-2xl font-bold text-mapleGold">Scores: <span id="final-score">0</span></div>
+                            <button onclick="startGame()" class="px-8 py-3 bg-red-600 hover:bg-neonCyan text-white font-bold rounded border border-white shadow-neonCyan tracking-widest transition-all">
+                                REBOOT MECH
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- HUD Bars Overlay (In-Game Stats) -->
+                    <div class="absolute top-0 inset-x-0 p-4 z-20 flex justify-between pointer-events-none">
+                        <!-- Left HUD (HP) -->
+                        <div class="w-2/5 flex flex-col gap-1">
+                            <div class="flex justify-between text-[11px] font-mono text-neonCyan">
+                                <span>MECH CORE HEALTH</span>
+                                <span id="hud-hp-txt">100%</span>
+                            </div>
+                            <div class="w-full bg-black/60 h-3 rounded-full border border-neonCyan/40 overflow-hidden">
+                                <div id="hud-hp-bar" class="h-full bg-gradient-to-r from-neonCyan to-cyan-500 transition-all duration-100" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Right HUD (Overdrive) -->
+                        <div class="w-2/5 flex flex-col gap-1">
+                            <div class="flex justify-between text-[11px] font-mono text-mapleGold">
+                                <span>SIRUP OVERDRIVE</span>
+                                <span id="hud-overdrive-txt">READY</span>
+                            </div>
+                            <div class="w-full bg-black/60 h-3 rounded-full border border-mapleGold/40 overflow-hidden">
+                                <div id="hud-overdrive-bar" class="h-full bg-gradient-to-r from-mapleGold to-orange-500 transition-all duration-100" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Game Canvas -->
+                    <canvas id="game-canvas" class="flex-grow w-full bg-cyberDark cursor-crosshair"></canvas>
+
+                    <!-- Score and Wave Indicator -->
+                    <div class="absolute bottom-0 inset-x-0 p-3 bg-black/80 border-t border-cyan-500/30 flex justify-between items-center text-xs font-mono text-neonCyan">
+                        <div>SCORE: <span id="hud-score" class="text-white font-bold text-sm">00000</span></div>
+                        <div class="flex items-center gap-2">
+                            <span class="animate-pulse text-mapleGold">WAVE: <span id="hud-wave" class="text-white font-bold">1</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Controllers (Hidden on Desktop) -->
+                <div class="lg:hidden bg-cyberGray/80 border border-cyan-500/30 rounded-xl p-3 flex justify-around items-center">
+                    <button id="btn-left" class="w-16 h-12 bg-black/50 border border-neonCyan rounded-lg text-neonCyan font-bold active:bg-neonCyan active:text-black">LEFT</button>
+                    <button id="btn-shoot" class="w-24 h-12 bg-gradient-to-r from-mapleGold to-amber-600 rounded-lg text-black font-black active:scale-95 shadow-mapleGold">FIRE</button>
+                    <button id="btn-right" class="w-16 h-12 bg-black/50 border border-neonCyan rounded-lg text-neonCyan font-bold active:bg-neonCyan active:text-black">RIGHT</button>
+                </div>
+            </main>
+
+            <!-- RIGHT COLUMN: SYSTEM LOG & SOUNDBOARD (3 cols) -->
+            <aside class="lg:col-span-3 flex flex-col gap-4">
+                <!-- Persistent System Log -->
+                <section class="bg-cyberGray/80 border-2 border-neonCyan/30 rounded-xl p-4 flex flex-col h-[280px] backdrop-blur-md">
+                    <h2 class="text-sm font-bold tracking-wider text-neonCyan border-b border-neonCyan/30 pb-2 mb-2 flex items-center justify-between">
+                        <span>PERSISTENTES SYSTEMLOG</span>
+                        <button onclick="clearLog()" class="text-[9px] text-gray-400 hover:text-white uppercase">[CLEAR]</button>
+                    </h2>
+                    <div id="system-log" class="flex-grow overflow-y-auto text-[10px] font-mono space-y-1.5 pr-1">
+                        <!-- Logs added dynamically -->
+                    </div>
+                </section>
+
+                <!-- Soundboard panel -->
+                <section class="bg-cyberGray/80 border-2 border-amber-500/30 rounded-xl p-4 backdrop-blur-md">
+                    <h2 class="text-sm font-bold tracking-wider text-mapleGold border-b border-mapleGold/30 pb-2 mb-3">
+                        SOUNDBOARD & DIALECT
+                    </h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="playSoundEffect('shoot')" class="py-2 bg-black/50 border border-neonCyan/30 text-neonCyan rounded text-xs hover:border-neonCyan transition">Syrup Blast</button>
+                        <button onclick="playSoundEffect('overdrive')" class="py-2 bg-black/50 border border-amber-500/30 text-mapleGold rounded text-xs hover:border-mapleGold transition">Overdrive ON</button>
+                        <button onclick="playSoundEffect('explosion')" class="py-2 bg-black/50 border border-red-500/30 text-red-400 rounded text-xs hover:border-red-400 transition">Toaster Burst</button>
+                        <button onclick="playSoundEffect('click')" class="py-2 bg-black/50 border border-gray-500/30 text-gray-300 rounded text-xs hover:border-white transition">Haptic Beep</button>
+                    </div>
+                    <div class="mt-3 p-2 bg-black/60 rounded border border-amber-500/20 text-center">
+                        <p class="text-[10px] font-mono text-gray-400">"Waffle + Batter + Heat = Eternal Peace"</p>
+                    </div>
+                </section>
+            </aside>
+        </div>
+
+        <!-- FOOTER / OFFLINE PWA / STATS -->
+        <footer class="flex flex-col md:flex-row justify-between items-center text-[10px] font-mono text-gray-500 border-t border-cyberGray pt-3">
+            <div>ARCHÉ™ GOLD PROTOCOL v1.5 Expanded // Built for the Waffle-Dimension</div>
+            <div class="flex gap-4">
+                <span class="hover:text-neonCyan cursor-pointer">PWA: OFFLINE COMPLIANT</span>
+                <span>•</span>
+                <span class="hover:text-mapleGold cursor-pointer">AHORN-KERN STATUS: CRITICAL GOLD</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ARTIFACT LIGHTBOX / DIALOG -->
+    <div id="lightbox" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-cyberGray border-2 border-mapleGold max-w-md w-full p-6 rounded-xl shadow-neonCyanGold relative">
+            <button onclick="closeLightbox()" class="absolute top-3 right-3 text-white hover:text-mapleGold text-xl">&times;</button>
+            <div id="lightbox-content" class="space-y-4">
+                <!-- Filled dynamically by JS click -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO CORE ENGINE & GAME SCRIPT -->
+    <script>
+        // -------------------------------------------------------------
+        // Audio Synthesizer (Web Audio API)
+        // -------------------------------------------------------------
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSoundEffect(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                const now = audioCtx.currentTime;
+                
+                if (type === 'shoot') {
+                    // Quick futuristic laser sound
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.15);
+                } 
+                else if (type === 'overdrive') {
+                    // Rising synth sound
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.5);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.5);
+                } 
+                else if (type === 'explosion') {
+                    // Low noise explosion
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(10, now + 0.4);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.4);
+                } 
+                else if (type === 'click') {
+                    // Retro click
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1200, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.05);
+                }
+                else if (type === 'hit') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.linearRampToValueAtTime(40, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(now + 0.1);
+                }
+            } catch (e) {
+                console.log("Audio failure:", e);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Database & State (Axioms & Artifacts)
+        // -------------------------------------------------------------
+        const Axioms = [
+            { id: 1, text: "Waffle + Batter + Heat = Eternal Peace", unlocked: false },
+            { id: 2, text: "The Syrup must flow endlessly", unlocked: false },
+            { id: 3, text: "Preheat Toaster Mech to 450 Kelvin", unlocked: false },
+            { id: 4, text: "Golden crust integrity must never fail", unlocked: false },
+            { id: 5, text: "Absolute butter grid symmetry rules", unlocked: false },
+            { id: 6, text: "Reject burnt toast anomalies", unlocked: false },
+            { id: 7, text: "Arché Core power requires high voltage", unlocked: false },
+            { id: 8, text: "Eternal respect to the Maple Keepers", unlocked: false }
+        ];
+
+        const Artifacts = [
+            { id: 1, name: "Goldene Arché Waffel", img: "🧇", desc: "Das ultimative Symbol des Friedens in der Waffel-Dimension. Reine goldene Energie.", unlocked: false },
+            { id: 2, name: "Dampfender GIR-Toaster", img: "🍞", desc: "Der Mech-Toaster, der Batterien erhitzt, um perfekte Waffeln zu backen.", unlocked: false },
+            { id: 3, name: "Sirup Kristall-Kanister", img: "🍯", desc: "Konzentrierter, reiner Ahornsirup. Heilt den Mech und schaltet Overdrive frei.", unlocked: false },
+            { id: 4, name: "Heizspulen-Matrix", img: "🔥", desc: "Überhitzte Spulen, die bis zu 450K Hitze erzeugen können.", unlocked: false }
+        ];
+
+        // System Log handling
+        function addLog(msg, level = 'info') {
+            const container = document.getElementById('system-log');
+            const time = new Date().toLocaleTimeString();
+            let color = 'text-neonCyan';
+            if (level === 'warning') color = 'text-mapleGold';
+            if (level === 'danger') color = 'text-red-500';
+            
+            const p = document.createElement('p');
+            p.className = `${color} leading-relaxed animate-pulse-once`;
+            p.innerHTML = `<span class="text-gray-500">[${time}]</span> ${msg}`;
+            container.appendChild(p);
+            container.scrollTop = container.scrollHeight;
+
+            // Keep log size manageable
+            while (container.childNodes.length > 50) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        function clearLog() {
+            playSoundEffect('click');
+            document.getElementById('system-log').innerHTML = '';
+            addLog("Systemlog gelöscht. Arché Status stabil.", "info");
+        }
+
+        // Render Axioms UI
+        function updateAxiomUI() {
+            const list = document.getElementById('axiom-list');
+            list.innerHTML = '';
+            let unlockedCount = 0;
+            
+            Axioms.forEach(ax => {
+                if (ax.unlocked) unlockedCount++;
+                const item = document.createElement('li');
+                item.className = `flex justify-between items-center p-1.5 border-b border-white/5 ${ax.unlocked ? 'text-mapleGold' : 'text-gray-600'}`;
+                item.innerHTML = `
+                    <span class="truncate pr-1">${ax.id}. ${ax.text}</span>
+                    <span class="text-[9px] px-1 rounded ${ax.unlocked ? 'bg-mapleGold/20 border border-mapleGold' : 'bg-gray-800 border border-gray-700'}">
+                        ${ax.unlocked ? 'VERIFIZIERT' : 'GESPERRT'}
+                    </span>
+                `;
+                list.appendChild(item);
+            });
+            document.getElementById('unlocked-axioms-counter').innerText = `${unlockedCount}/8`;
+        }
+
+        // Render Artifacts UI
+        function updateArtifactUI() {
+            const grid = document.getElementById('artifact-grid');
+            grid.innerHTML = '';
+            Artifacts.forEach(art => {
+                const item = document.createElement('div');
+                item.className = `aspect-square bg-black/40 border ${art.unlocked ? 'border-mapleGold hover:shadow-mapleGold hover:bg-mapleGold/10 cursor-pointer' : 'border-gray-800 opacity-40'} rounded-lg flex flex-col justify-center items-center text-2xl transition relative`;
+                item.innerHTML = `
+                    <span>${art.img}</span>
+                    <span class="absolute bottom-1 text-[8px] font-mono tracking-widest text-gray-500">${art.unlocked ? 'OFFEN' : 'NEU'}</span>
+                `;
+                if (art.unlocked) {
+                    item.onclick = () => openLightbox(art);
+                }
+                grid.appendChild(item);
+            });
+        }
+
+        function unlockAxiom(id) {
+            const axiom = Axioms.find(a => a.id === id);
+            if (axiom && !axiom.unlocked) {
+                axiom.unlocked = true;
+                addLog(`AXIOM ${id} VERIFIZIERT: ${axiom.text}`, 'warning');
+                playSoundEffect('overdrive');
+                updateAxiomUI();
+            }
+        }
+
+        function unlockArtifact(id) {
+            const art = Artifacts.find(a => a.id === id);
+            if (art && !art.unlocked) {
+                art.unlocked = true;
+                addLog(`ARTEFAKT UNLOCKED: ${art.name}!`, 'info');
+                playSoundEffect('overdrive');
+                updateArtifactUI();
+            }
+        }
+
+        // Lightbox actions
+        function openLightbox(artifact) {
+            playSoundEffect('click');
+            const content = document.getElementById('lightbox-content');
+            content.innerHTML = `
+                <div class="text-center space-y-4">
+                    <span class="text-6xl">${artifact.img}</span>
+                    <h3 class="text-2xl font-black text-mapleGold">${artifact.name}</h3>
+                    <p class="text-sm text-gray-300 font-mono leading-relaxed">${artifact.desc}</p>
+                    <div class="p-3 bg-black/50 border border-neonCyan/30 rounded text-xs font-mono text-neonCyan">
+                        ARCHÉ SYSTEM REGISTRY: UNLOCKED & SECURED
+                    </div>
+                </div>
+            `;
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            playSoundEffect('click');
+            document.getElementById('lightbox').classList.add('hidden');
+        }
+
+        // -------------------------------------------------------------
+        // Core Game Engine (Canvas)
+        // -------------------------------------------------------------
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game State Variables
+        let gameState = 'START';
+        let score = 0;
+        let wave = 1;
+        let player = {
+            x: 0,
+            y: 0,
+            width: 40,
+            height: 40,
+            speed: 5,
+            hp: 100,
+            maxHp: 100,
+            overdrive: 0,
+            maxOverdrive: 100,
+            overdriveActive: false,
+            overdriveTimer: 0
+        };
+
+        let projectiles = [];
+        let enemies = [];
+        let particles = [];
+        let collectibles = [];
+        let bosses = [];
+        let keys = {};
+
+        // Resize Canvas to fit wrapper
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height - 40; // adjusting for the bottom bar height
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Control Listeners
+        window.addEventListener('keydown', e => {
+            keys[e.code] = true;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                fireProjectile();
+            }
+        });
+        window.addEventListener('keyup', e => {
+            keys[e.code] = false;
+        });
+
+        // Click to shoot
+        canvas.addEventListener('click', () => {
+            if (gameState === 'PLAYING') {
+                fireProjectile();
+            }
+        });
+
+        // Touch/Mobile Button Handlers
+        document.getElementById('btn-left').addEventListener('pointerdown', () => keys['KeyA'] = true);
+        document.getElementById('btn-left').addEventListener('pointerup', () => keys['KeyA'] = false);
+        document.getElementById('btn-right').addEventListener('pointerdown', () => keys['KeyD'] = true);
+        document.getElementById('btn-right').addEventListener('pointerup', () => keys['KeyD'] = false);
+        document.getElementById('btn-shoot').addEventListener('click', () => {
+            if (gameState === 'PLAYING') fireProjectile();
+        });
+
+        // Initialize Game
+        function startGame() {
+            playSoundEffect('overdrive');
+            initAudio();
+            gameState = 'PLAYING';
+            score = 0;
+            wave = 1;
+            
+            // Reset Player
+            player.x = canvas.width / 2 - player.width / 2;
+            player.y = canvas.height - 60;
+            player.hp = 100;
+            player.overdrive = 0;
+            player.overdriveActive = false;
+
+            projectiles = [];
+            enemies = [];
+            particles = [];
+            collectibles = [];
+            bosses = [];
+
+            document.getElementById('game-screens').classList.add('hidden');
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-gameover').classList.add('hidden');
+
+            addLog("Mekatronischer GIR-Toaster hochgefahren. Schutzschilde aktiv.", "info");
+            unlockAxiom(1); // Unlock Axiom 1 instantly
+
+            spawnWave();
+        }
+
+        // Fire Bullet
+        function fireProjectile() {
+            initAudio();
+            playSoundEffect('shoot');
+            const now = Date.now();
+            
+            if (player.overdriveActive) {
+                // Triple fast golden projectiles
+                projectiles.push({ x: player.x + player.width / 2, y: player.y, dx: 0, dy: -12, size: 7, color: '#ffb700', damage: 30 });
+                projectiles.push({ x: player.x + player.width / 2, y: player.y, dx: -3, dy: -10, size: 5, color: '#ffb700', damage: 20 });
+                projectiles.push({ x: player.x + player.width / 2, y: player.y, dx: 3, dy: -10, size: 5, color: '#ffb700', damage: 20 });
+            } else {
+                // Single standard neon projectile
+                projectiles.push({
+                    x: player.x + player.width / 2,
+                    y: player.y,
+                    dx: 0,
+                    dy: -8,
+                    size: 5,
+                    color: '#00f0ff',
+                    damage: 15
+                });
+            }
+        }
+
+        // Spawning Enemies
+        function spawnWave() {
+            const baseCount = 4 + wave * 2;
+            addLog(`Wellen-Protokoll ${wave} gestartet. Anomalien erkannt.`, "warning");
+            
+            // Boss wave every 5 waves
+            if (wave % 5 === 0) {
+                addLog(`WARNUNG: BOSS-WELLE! Giga-Toaster bricht durch!`, "danger");
+                bosses.push({
+                    x: canvas.width / 2 - 40,
+                    y: -100,
+                    width: 80,
+                    height: 80,
+                    hp: 500 + wave * 100,
+                    maxHp: 500 + wave * 100,
+                    speed: 1,
+                    direction: 1
+                });
+                unlockAxiom(7);
+            }
+
+            for (let i = 0; i < baseCount; i++) {
+                const typeRand = Math.random();
+                let enemyType = 'toast';
+                let hp = 15 + wave * 5;
+                let color = '#a16207'; // Toast/Bread color
+                
+                if (typeRand > 0.7) {
+                    enemyType = 'soggy'; // Faster pancake
+                    hp = 10 + wave * 3;
+                    color = '#f59e0b';
+                } else if (typeRand > 0.9) {
+                    enemyType = 'glitch'; // Dangerous fast glitch
+                    hp = 5 + wave * 2;
+                    color = '#ef4444';
+                }
+
+                enemies.push({
+                    x: Math.random() * (canvas.width - 40),
+                    y: -50 - Math.random() * 300,
+                    width: 32,
+                    height: 32,
+                    type: enemyType,
+                    hp: hp,
+                    maxHp: hp,
+                    color: color,
+                    speed: 1 + Math.random() * 2 + (wave * 0.15),
+                    shootCooldown: Math.random() * 200 + 100
+                });
+            }
+        }
+
+        // Create particles for hit / death
+        function createExplosion(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    radius: Math.random() * 3 + 1,
+                    alpha: 1,
+                    color: color,
+                    life: Math.random() * 30 + 10
+                });
+            }
+        }
+
+        // Update loop
+        function update() {
+            if (gameState !== 'PLAYING') return;
+
+            // Player Movement
+            if (keys['ArrowLeft'] || keys['KeyA']) {
+                player.x = Math.max(0, player.x - player.speed);
+            }
+            if (keys['ArrowRight'] || keys['KeyD']) {
+                player.x = Math.min(canvas.width - player.width, player.x + player.speed);
+            }
+
+            // Handle Overdrive
+            if (player.overdriveActive) {
+                player.overdriveTimer--;
+                player.overdrive = (player.overdriveTimer / 300) * 100;
+                if (player.overdriveTimer <= 0) {
+                    player.overdriveActive = false;
+                    player.overdrive = 0;
+                    document.getElementById('overdrive-screen').classList.add('opacity-0');
+                    addLog("Overdrive beendet. Kühlsystem reaktiviert.", "info");
+                }
+            } else if (player.overdrive >= 100) {
+                player.overdriveActive = true;
+                player.overdriveTimer = 300; // 5 seconds of fury
+                playSoundEffect('overdrive');
+                addLog("SIRUP-OVERDRIVE AKTIVIERT! Plasma-Zufuhr überladen!", "warning");
+                document.getElementById('overdrive-screen').classList.remove('opacity-0');
+                unlockAxiom(2);
+            }
+
+            // Update Projectiles
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                let p = projectiles[i];
+                p.x += p.dx;
+                p.y += p.dy;
+                // Out of screen
+                if (p.y < 0 || p.x < 0 || p.x > canvas.width) {
+                    projectiles.splice(i, 1);
+                }
+            }
+
+            // Update Bosses
+            for (let i = bosses.length - 1; i >= 0; i--) {
+                let b = bosses[i];
+                // Enter arena
+                if (b.y < 60) {
+                    b.y += 1;
+                } else {
+                    // Move left and right
+                    b.x += b.speed * b.direction;
+                    if (b.x <= 0 || b.x >= canvas.width - b.width) {
+                        b.direction *= -1;
+                    }
+                }
+
+                // Fire at player
+                if (Math.random() < 0.02) {
+                    projectiles.push({
+                        x: b.x + b.width / 2,
+                        y: b.y + b.height,
+                        dx: (Math.random() - 0.5) * 4,
+                        dy: 5,
+                        size: 8,
+                        color: '#ef4444',
+                        damage: 20
+                    });
+                }
+
+                // Check collisions with player projectiles
+                for (let j = projectiles.length - 1; j >= 0; j--) {
+                    let p = projectiles[j];
+                    if (p.dy < 0 && p.x > b.x && p.x < b.x + b.width && p.y > b.y && p.y < b.y + b.height) {
+                        b.hp -= p.damage;
+                        projectiles.splice(j, 1);
+                        createExplosion(p.x, p.y, '#ffb700', 4);
+                        playSoundEffect('hit');
+
+                        if (b.hp <= 0) {
+                            bosses.splice(i, 1);
+                            createExplosion(b.x + b.width / 2, b.y + b.height / 2, '#ffb700', 50);
+                            score += 500;
+                            playSoundEffect('explosion');
+                            addLog("RÜSTUNGS-BOSS TOASTER ZERSTÖRT!", "warning");
+                            unlockArtifact(2);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Update Enemies
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i];
+                e.y += e.speed;
+
+                // Fire enemy projectiles randomly
+                e.shootCooldown--;
+                if (e.shootCooldown <= 0) {
+                    projectiles.push({
+                        x: e.x + e.width / 2,
+                        y: e.y + e.height,
+                        dx: 0,
+                        dy: 4,
+                        size: 4,
+                        color: '#9a3412',
+                        damage: 10
+                    });
+                    e.shootCooldown = Math.random() * 200 + 100;
+                }
+
+                // Reach bottom
+                if (e.y > canvas.height) {
+                    enemies.splice(i, 1);
+                    player.hp -= 15;
+                    addLog("Eindringling durchgebrochen! Matrix-Schild beschädigt.", "danger");
+                    playSoundEffect('hit');
+                    checkGameOver();
+                    continue;
+                }
+
+                // Collision with player projectiles
+                for (let j = projectiles.length - 1; j >= 0; j--) {
+                    let p = projectiles[j];
+                    // Make sure it's player projectile (moving up)
+                    if (p.dy < 0 && p.x > e.x && p.x < e.x + e.width && p.y > e.y && p.y < e.y + e.height) {
+                        e.hp -= p.damage;
+                        projectiles.splice(j, 1);
+                        createExplosion(p.x, p.y, '#e2e8f0', 3);
+                        playSoundEffect('hit');
+
+                        if (e.hp <= 0) {
+                            enemies.splice(i, 1);
+                            createExplosion(e.x + e.width / 2, e.y + e.height / 2, e.color, 12);
+                            playSoundEffect('explosion');
+                            score += 20;
+
+                            // Spawn collectible
+                            if (Math.random() < 0.4) {
+                                collectibles.push({
+                                    x: e.x + e.width / 2,
+                                    y: e.y + e.height / 2,
+                                    type: Math.random() > 0.5 ? 'sirup' : 'batter',
+                                    size: 10,
+                                    speed: 2
+                                });
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                // Collision with player
+                if (e.x < player.x + player.width &&
+                    e.x + e.width > player.x &&
+                    e.y < player.y + player.height &&
+                    e.y + e.height > player.y) {
+                    
+                    enemies.splice(i, 1);
+                    player.hp -= 20;
+                    playSoundEffect('explosion');
+                    createExplosion(e.x + e.width / 2, e.y + e.height / 2, '#ef4444', 15);
+                    addLog("Kollision mit Toaster-Drohne!", "danger");
+                    checkGameOver();
+                }
+            }
+
+            // Check Player collision with enemy projectiles (moving down)
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                let p = projectiles[i];
+                if (p.dy > 0 && p.x > player.x && p.x < player.x + player.width && p.y > player.y && p.y < player.y + player.height) {
+                    projectiles.splice(i, 1);
+                    player.hp -= p.damage;
+                    playSoundEffect('hit');
+                    addLog("Treffer durch Asche-Rückstände!", "danger");
+                    checkGameOver();
+                }
+            }
+
+            // Update Collectibles
+            for (let i = collectibles.length - 1; i >= 0; i--) {
+                let c = collectibles[i];
+                c.y += c.speed;
+
+                // Collect
+                if (c.x > player.x && c.x < player.x + player.width && c.y > player.y && c.y < player.y + player.height) {
+                    collectibles.splice(i, 1);
+                    playSoundEffect('click');
+                    
+                    if (c.type === 'sirup') {
+                        player.overdrive += 25;
+                        addLog("Sirup-Overdrive Zufuhr stabilisiert.", "info");
+                        unlockArtifact(3);
+                    } else {
+                        player.hp = Math.min(player.maxHp, player.hp + 15);
+                        addLog("Teig-Matrix repariert Mech-Struktur.", "info");
+                        unlockArtifact(1);
+                    }
+                    score += 50;
+
+                    // Randomly verify axioms based on collectibles & score
+                    if (score >= 500) unlockAxiom(3);
+                    if (score >= 1000) unlockAxiom(4);
+                    if (score >= 2000) unlockAxiom(5);
+                    if (score >= 3500) unlockAxiom(6);
+                    if (score >= 5000) unlockAxiom(8);
+                    
+                    continue;
+                }
+
+                if (c.y > canvas.height) {
+                    collectibles.splice(i, 1);
+                }
+            }
+
+            // Update Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.02;
+                p.life--;
+                if (p.life <= 0 || p.alpha <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // End Wave condition
+            if (enemies.length === 0 && bosses.length === 0) {
+                wave++;
+                spawnWave();
+            }
+
+            updateHUD();
+        }
+
+        // Draw Loop
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Grid Background
+            ctx.strokeStyle = '#00f0ff10';
+            ctx.lineWidth = 1;
+            const gridSize = 40;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            if (gameState === 'PLAYING') {
+                // Draw Particles
+                particles.forEach(p => {
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                // Draw Collectibles
+                collectibles.forEach(c => {
+                    ctx.fillStyle = c.type === 'sirup' ? '#ffb700' : '#00f0ff';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = ctx.fillStyle;
+                    ctx.beginPath();
+                    if (c.type === 'sirup') {
+                        // Drop shape
+                        ctx.moveTo(c.x, c.y - c.size);
+                        ctx.quadraticCurveTo(c.x + c.size, c.y, c.x, c.y + c.size);
+                        ctx.quadraticCurveTo(c.x - c.size, c.y, c.x, c.y - c.size);
+                    } else {
+                        // Waffle grid symbol
+                        ctx.rect(c.x - c.size/2, c.y - c.size/2, c.size, c.size);
+                    }
+                    ctx.fill();
+                    ctx.shadowBlur = 0; // Reset
+                });
+
+                // Draw Projectiles
+                projectiles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                });
+
+                // Draw Bosses
+                bosses.forEach(b => {
+                    // Draw a giant retro tech toaster
+                    ctx.fillStyle = '#1e293b';
+                    ctx.strokeStyle = '#ffb700';
+                    ctx.lineWidth = 3;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ffb700';
+                    
+                    // Body
+                    ctx.beginPath();
+                    ctx.roundRect(b.x, b.y, b.width, b.height, 10);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Glowing Toaster Coils
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(b.x + 15, b.y + b.height/2);
+                    ctx.lineTo(b.x + b.width - 15, b.y + b.height/2);
+                    ctx.stroke();
+
+                    // HP bar above boss
+                    const hpPct = b.hp / b.maxHp;
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(b.x, b.y - 15, b.width * hpPct, 6);
+                });
+
+                // Draw Enemies
+                enemies.forEach(e => {
+                    ctx.fillStyle = e.color;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1;
+
+                    ctx.save();
+                    ctx.translate(e.x + e.width / 2, e.y + e.height / 2);
+                    
+                    // Draw bread slice or glitch triangle
+                    if (e.type === 'toast') {
+                        ctx.beginPath();
+                        ctx.roundRect(-e.width/2, -e.height/2, e.width, e.height, 5);
+                        ctx.fill();
+                        ctx.stroke();
+                        // Face
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(-8, -6, 3, 3);
+                        ctx.fillRect(5, -6, 3, 3);
+                    } else if (e.type === 'soggy') {
+                        // Round pancake
+                        ctx.beginPath();
+                        ctx.arc(0, 0, e.width/2, 0, Math.PI*2);
+                        ctx.fill();
+                        ctx.stroke();
+                    } else {
+                        // Glitch neon diamond
+                        ctx.rotate(Date.now() * 0.01);
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = '#ef4444';
+                        ctx.fillStyle = '#ef4444';
+                        ctx.fillRect(-e.width/2, -e.height/2, e.width, e.height);
+                    }
+                    ctx.restore();
+                });
+
+                // Draw Player (GIR-Toaster-Mech arm)
+                ctx.save();
+                ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+
+                // Glow effect under overdrive
+                if (player.overdriveActive) {
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#ffb700';
+                    ctx.fillStyle = '#ffb700';
+                } else {
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#00f0ff';
+                    ctx.fillStyle = '#00f0ff';
+                }
+
+                // Draw futuristic Mech base
+                ctx.beginPath();
+                ctx.moveTo(0, -player.height / 2);
+                ctx.lineTo(player.width / 2, player.height / 2);
+                ctx.lineTo(-player.width / 2, player.height / 2);
+                ctx.closePath();
+                ctx.fill();
+
+                // Golden Toaster hatch details
+                ctx.fillStyle = '#d97706';
+                ctx.fillRect(-10, -5, 20, 10);
+
+                ctx.restore();
+            }
+        }
+
+        // Check if player health reaches zero
+        function checkGameOver() {
+            if (player.hp <= 0) {
+                player.hp = 0;
+                gameState = 'GAMEOVER';
+                playSoundEffect('explosion');
+                addLog("KRITISCHER FEHLER: Mech-Kern zerstört.", "danger");
+                
+                document.getElementById('final-score').innerText = score;
+                document.getElementById('game-screens').classList.remove('hidden');
+                document.getElementById('screen-gameover').classList.remove('hidden');
+            }
+        }
+
+        // Keep HTML indicators updated
+        function updateHUD() {
+            document.getElementById('hud-hp-txt').innerText = `${player.hp}%`;
+            document.getElementById('hud-hp-bar').style.width = `${player.hp}%`;
+
+            if (player.hp < 30) {
+                document.getElementById('hud-hp-bar').style.background = '#ef4444';
+            } else {
+                document.getElementById('hud-hp-bar').style.background = 'linear-gradient(90deg, #00f0ff, #06b6d4)';
+            }
+
+            document.getElementById('hud-overdrive-txt').innerText = player.overdriveActive ? "OVERDRIVE!" : `${Math.floor(player.overdrive)}%`;
+            document.getElementById('hud-overdrive-bar').style.width = `${player.overdrive}%`;
+
+            document.getElementById('hud-score').innerText = String(score).padStart(5, '0');
+            document.getElementById('hud-wave').innerText = wave;
+        }
+
+        // High frequency game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Initialize HUD & Core Logs
+        updateAxiomUI();
+        updateArtifactUI();
+        addLog("SYSTEM INITIALISIERT. Drücke 'INITIALIZE PROTOCOL' zum Starten.", "info");
+
+        // Start animation loop
+        requestAnimationFrame(gameLoop);
+
+        // -------------------------------------------------------------
+        // Offline-PWA Service Worker Registration
+        // -------------------------------------------------------------
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Minimal register fallback to trigger PWA install states
+                navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGUgPT4gZSk7')
+                .then(reg => console.log('ARCHÉ PWA Registered successfully.'))
+                .catch(err => console.log('ARCHÉ PWA Service worker error: ', err));
+            });
+        }
+    </script>
+</body>
+</html>
